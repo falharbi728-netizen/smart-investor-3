@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "منصة المستثمر الذكي | Smart Investor Platform - Vision 2030",
   "private": true,
+  "main": "smart-investor-platform.jsx"
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
