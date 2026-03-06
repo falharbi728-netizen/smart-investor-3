@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>المستثمر الذكي | Smart Investor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#060d1a;color:#fff;overflow-x:hidden}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(6,182,212,0.3);border-radius:99px}
+  input[type=range]{height:4px;border-radius:99px;cursor:pointer}
+  select option{background:#0d1f38}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .fu{animation:fadeUp 0.4s ease forwards}
+  .spin{animation:spin 1s linear infinite}
+  .pulse{animation:pulse 2s ease-in-out infinite}
+  .teal-text{background:linear-gradient(135deg,#06b6d4,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const OPPORTUNITIES = [
+  { id:1, title:"مجمع تجاري متكامل", titleEn:"Integrated Commercial Complex", sector:"عقارات", sectorEn:"Real Estate", city:"الرياض", cityEn:"Riyadh", cost:15000000, roi:22, risk:"متوسط", riskEn:"Medium", score:87, trend:"+4.2%", lat:24.7136, lng:46.6753, description:"مجمع تجاري متطور يضم محلات تجارية ومكاتب ومطاعم في قلب الرياض، يستهدف الفئة المتوسطة والعليا بموقع استراتيجي فريد.", descriptionEn:"A sophisticated commercial complex featuring retail outlets, offices, and restaurants in the heart of Riyadh.", image:"https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80", tag:"مميز", views:1240, fundedPct:68 },
+  { id:2, title:"منتجع سياحي ساحلي", titleEn:"Coastal Tourist Resort", sector:"سياحة", sectorEn:"Tourism", city:"جدة", cityEn:"Jeddah", cost:45000000, roi:18, risk:"منخفض", riskEn:"Low", score:91, trend:"+7.8%", lat:21.5433, lng:39.1728, description:"منتجع فاخر على ساحل البحر الأحمر مع وحدات فندقية وشاليهات وخدمات ترفيهية متكاملة تستقطب السياح.", descriptionEn:"A luxury resort on the Red Sea coast with hotel units, chalets, and integrated entertainment services.", image:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80", tag:"الأعلى تقييماً", views:3820, fundedPct:85 },
+  { id:3, title:"مزرعة تقنية زراعية", titleEn:"AgriTech Smart Farm", sector:"زراعة", sectorEn:"Agriculture", city:"القصيم", cityEn:"Qassim", cost:8000000, roi:31, risk:"مرتفع", riskEn:"High", score:74, trend:"+12.1%", lat:26.326, lng:43.975, description:"مزرعة ذكية تستخدم الزراعة المائية والطاقة الشمسية لإنتاج محاصيل عضوية بكفاءة مائية تفوق 90٪.", descriptionEn:"A smart farm using hydroponic technology and solar energy to produce high-quality organic crops.", image:"https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&q=80", tag:"عائد مرتفع", views:890, fundedPct:42 },
+  { id:4, title:"مركز لوجستي متكامل", titleEn:"Integrated Logistics Center", sector:"لوجستيات", sectorEn:"Logistics", city:"الدمام", cityEn:"Dammam", cost:28000000, roi:25, risk:"منخفض", riskEn:"Low", score:89, trend:"+5.5%", lat:26.4207, lng:50.0888, description:"مركز لوجستي استراتيجي قرب الميناء يخدم التجارة والصناعة والتوزيع في المنطقة الشرقية.", descriptionEn:"A strategic logistics center near the port serving trade, industry, and distribution sectors.", image:"https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80", tag:"", views:2100, fundedPct:71 },
+  { id:5, title:"محطة طاقة شمسية", titleEn:"Solar Energy Station", sector:"طاقة", sectorEn:"Energy", city:"تبوك", cityEn:"Tabuk", cost:55000000, roi:19, risk:"منخفض", riskEn:"Low", score:93, trend:"+9.3%", lat:28.3838, lng:36.555, description:"محطة طاقة شمسية بقدرة 200 ميجاوات تساهم في أهداف رؤية 2030 للطاقة المتجددة.", descriptionEn:"A 200MW solar power plant contributing to Vision 2030 renewable energy targets.", image:"https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80", tag:"رؤية 2030", views:4500, fundedPct:92 },
+  { id:6, title:"حي ترفيهي متكامل", titleEn:"Entertainment District", sector:"ترفيه", sectorEn:"Entertainment", city:"مكة المكرمة", cityEn:"Makkah", cost:120000000, roi:27, risk:"متوسط", riskEn:"Medium", score:85, trend:"+3.9%", lat:21.3891, lng:39.8579, description:"حي ترفيهي شامل يضم تسوقاً وترفيهاً وفنادق ومطاعم عالمية لملايين الزوار سنوياً.", descriptionEn:"A comprehensive entertainment district with shopping, hotels and international restaurants.", image:"https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800&q=80", tag:"", views:5670, fundedPct:55 },
+  { id:7, title:"مستشفى تخصصي ذكي", titleEn:"Smart Specialty Hospital", sector:"صحة", sectorEn:"Healthcare", city:"الرياض", cityEn:"Riyadh", cost:75000000, roi:21, risk:"منخفض", riskEn:"Low", score:90, trend:"+6.1%", lat:24.6877, lng:46.7219, description:"مستشفى من الجيل الجديد يدمج الذكاء الاصطناعي في التشخيص والعلاج لرعاية صحية استثنائية.", descriptionEn:"Next-generation hospital integrating AI in diagnosis and treatment.", image:"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80", tag:"جديد", views:1980, fundedPct:38 },
+  { id:8, title:"حديقة تقنية ناشئة", titleEn:"Tech Startup Park", sector:"تقنية", sectorEn:"Technology", city:"نيوم", cityEn:"NEOM", cost:200000000, roi:35, risk:"مرتفع", riskEn:"High", score:78, trend:"+18.7%", lat:28.0, lng:35.5, description:"مجمع تقني متكامل في نيوم يستقطب الشركات الناشئة والمبدعين من حول العالم.", descriptionEn:"An integrated tech complex in NEOM attracting startups and tech innovators worldwide.", image:"https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80", tag:"نيوم", views:8900, fundedPct:28 },
+];
+
+const CONSULTANTS = [
+  { id:1, name:"د. محمد الغامدي", nameEn:"Dr. Mohammed Al-Ghamdi", specialty:"عقارات واستثمار", specialtyEn:"Real Estate & Investment", studies:24, rating:4.9, city:"الرياض", cityEn:"Riyadh", avatar:"MG", verified:true, clients:142, responseTimeAr:"< ٢ ساعة", responseTimeEn:"< 2 hours" },
+  { id:2, name:"أ. سارة الزهراني", nameEn:"Sara Al-Zahrani", specialty:"السياحة والضيافة", specialtyEn:"Tourism & Hospitality", studies:18, rating:4.8, city:"جدة", cityEn:"Jeddah", avatar:"SZ", verified:true, clients:98, responseTimeAr:"< ٣ ساعات", responseTimeEn:"< 3 hours" },
+  { id:3, name:"م. خالد العتيبي", nameEn:"Eng. Khalid Al-Otaibi", specialty:"الطاقة المتجددة", specialtyEn:"Renewable Energy", studies:31, rating:4.7, city:"الدمام", cityEn:"Dammam", avatar:"KA", verified:true, clients:210, responseTimeAr:"< ١ ساعة", responseTimeEn:"< 1 hour" },
+  { id:4, name:"د. ريم الحربي", nameEn:"Dr. Reem Al-Harbi", specialty:"التقنية والابتكار", specialtyEn:"Technology & Innovation", studies:15, rating:4.9, city:"الرياض", cityEn:"Riyadh", avatar:"RH", verified:false, clients:67, responseTimeAr:"< ٤ ساعات", responseTimeEn:"< 4 hours" },
+];
+
+const SECTORS = [
+  { ar:"عقارات", en:"Real Estate", icon:"🏢", color:"#06b6d4" },
+  { ar:"سياحة", en:"Tourism", icon:"🏖️", color:"#10b981" },
+  { ar:"زراعة", en:"Agriculture", icon:"🌿", color:"#84cc16" },
+  { ar:"لوجستيات", en:"Logistics", icon:"🚢", color:"#f59e0b" },
+  { ar:"طاقة", en:"Energy", icon:"⚡", color:"#eab308" },
+  { ar:"ترفيه", en:"Entertainment", icon:"🎭", color:"#ec4899" },
+  { ar:"تقنية", en:"Technology", icon:"💡", color:"#8b5cf6" },
+  { ar:"صحة", en:"Healthcare", icon:"🏥", color:"#14b8a6" },
+];
+
+const MDATA = [
+  {m:"يناير",me:"Jan",v:4200},{m:"فبراير",me:"Feb",v:4800},{m:"مارس",me:"Mar",v:4500},
+  {m:"أبريل",me:"Apr",v:5200},{m:"مايو",me:"May",v:5800},{m:"يونيو",me:"Jun",v:6100},
+  {m:"يوليو",me:"Jul",v:5900},{m:"أغسطس",me:"Aug",v:6700},
+];
+
+// SVG Icons
+const SVGIcon = ({name,size=18,color="currentColor",style={}}) => {
+  const icons = {
+    home: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10",
+    map: "M1 6l7-4 8 4 7-4v16l-7 4-8-4-7 4V6 M8 2v16 M16 6v16",
+    brief: "M2 7h20v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16",
+    users: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
+    search: "M11 11a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35",
+    heart: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z",
+    pin: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+    bell: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0",
+    msg: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
+    trend: "M23 6L13.5 15.5 8.5 10.5 1 18 M17 6h6v6",
+    chart: "M18 20V10 M12 20V4 M6 20v-6",
+    calc: "M4 2h16a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z M8 6h8 M8 10h8 M8 14h4 M8 18h4",
+    shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+    star: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+    check: "M20 6L9 17 4 12",
+    x: "M18 6L6 18 M6 6l12 12",
+    send: "M22 2L11 13 M22 2L15 22l-4-9-9-4 22-7z",
+    ai: "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z M12 1v4 M12 19v4 M4.22 4.22l2.83 2.83 M16.95 16.95l2.83 2.83 M1 12h4 M19 12h4 M4.22 19.78l2.83-2.83 M16.95 7.05l2.83-2.83",
+    compare: "M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6",
+    eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+    award: "M12 14a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M15.477 12.89L17 22l-5-3-5 3 1.523-9.11",
+    upload: "M16 16l-4-4-4 4 M12 12v9 M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3",
+    right: "M9 18l6-6-6-6",
+    left: "M15 18l-6-6 6-6",
+    grid: "M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z",
+    list: "M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01",
+    menu: "M3 12h18 M3 6h18 M3 18h18",
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+      {icons[name] && icons[name].split(' M').map((seg,i) => {
+        const d = i===0 ? seg : 'M'+seg;
+        return <path key={i} d={d}/>;
+      })}
+    </svg>
+  );
+};
+
+const Ring = ({v, size=54}) => {
+  const r=(size-10)/2, c=2*Math.PI*r;
+  const col = v>=85?"#10b981":v>=70?"#f59e0b":"#ef4444";
+  return (
+    <div style={{position:"relative",width:size,height:size,flexShrink:0}}>
+      <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5"/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={col} strokeWidth="5"
+          strokeDasharray={`${(v/100)*c} ${c}`} strokeLinecap="round"/>
+      </svg>
+      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:col}}>{v}</div>
+    </div>
+  );
+};
+
+const FundBar = ({pct,isAr}) => (
+  <div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+      <span style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{isAr?"نسبة التمويل":"Funded"}</span>
+      <span style={{fontSize:10,fontWeight:700,color:"#06b6d4"}}>{pct}%</span>
+    </div>
+    <div style={{height:4,borderRadius:99,background:"rgba(255,255,255,0.08)",overflow:"hidden"}}>
+      <div style={{height:"100%",width:`${pct}%`,borderRadius:99,background:pct>80?"linear-gradient(90deg,#10b981,#06d6a0)":"linear-gradient(90deg,#06b6d4,#38bdf8)"}}/>
+    </div>
+  </div>
+);
+
+// News Ticker
+const NewsTicker = ({isAr}) => {
+  const items = isAr
+    ? ["▲ مؤشر الاستثمار السعودي يرتفع 2.3٪","• إطلاق صندوق استثمار جديد بـ5 مليار ريال","▲ الطلب على العقارات يرتفع 18٪","• نيوم تعلن 12 مشروعاً استثمارياً جديداً","▲ رؤية 2030: تحقيق 65٪ من مستهدفات الاستثمار"]
+    : ["▲ Saudi Investment Index +2.3%","• New SAR 5B tech fund launched","▲ Hotel real estate demand up 18%","• NEOM announces 12 new projects","▲ Vision 2030: 65% of FDI targets achieved"];
+  const [idx, setIdx] = useState(0);
+  useEffect(()=>{
+    const t = setInterval(()=>setIdx(i=>(i+1)%items.length),3500);
+    return ()=>clearInterval(t);
+  },[]);
+  return (
+    <div style={{background:"rgba(6,182,212,0.08)",borderBottom:"1px solid rgba(6,182,212,0.15)",padding:"7px 20px",display:"flex",alignItems:"center",gap:12}}>
+      <span style={{fontSize:10,fontWeight:800,color:"#06b6d4",background:"rgba(6,182,212,0.2)",padding:"2px 8px",borderRadius:99,flexShrink:0}}>
+        {isAr?"أخبار":"LIVE"}
+      </span>
+      <p style={{fontSize:12,color:"rgba(255,255,255,0.6)",transition:"all 0.4s"}}>{items[idx]}</p>
+    </div>
+  );
+};
+
+// Calculator
+const Calculator = ({isAr}) => {
+  const [amount,setAmount]=useState(1000000);
+  const [years,setYears]=useState(5);
+  const [roi,setRoi]=useState(20);
+  const total=amount*Math.pow(1+roi/100,years);
+  const profit=total-amount;
+  return (
+    <div style={{background:"rgba(6,182,212,0.05)",border:"1px solid rgba(6,182,212,0.2)",borderRadius:20,padding:24}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:18}}>
+        <div style={{width:36,height:36,borderRadius:10,background:"rgba(6,182,212,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <SVGIcon name="calc" size={16} color="#06b6d4"/>
+        </div>
+        <h3 style={{fontWeight:800,fontSize:15}}>{isAr?"حاسبة العائد الاستثماري":"ROI Calculator"}</h3>
+      </div>
+      {[
+        {label:isAr?"مبلغ الاستثمار (مليون ريال)":"Investment (Million SAR)",v:amount,set:setAmount,min:100000,max:50000000,step:100000,disp:`${(amount/1e6).toFixed(1)}M`},
+        {label:isAr?"سنوات الاستثمار":"Years",v:years,set:setYears,min:1,max:20,step:1,disp:`${years} ${isAr?"سنة":"yr"}`},
+        {label:isAr?"العائد السنوي ٪":"Annual ROI %",v:roi,set:setRoi,min:1,max:50,step:1,disp:`${roi}%`},
+      ].map((f,i)=>(
+        <div key={i} style={{marginBottom:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+            <label style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{f.label}</label>
+            <span style={{fontSize:12,fontWeight:700,color:"#06b6d4"}}>{f.disp}</span>
+          </div>
+          <input type="range" min={f.min} max={f.max} step={f.step} value={f.v}
+            onChange={e=>f.set(+e.target.value)}
+            style={{width:"100%",accentColor:"#06b6d4"}}/>
+        </div>
+      ))}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:6}}>
+        <div style={{padding:14,borderRadius:12,background:"rgba(6,182,212,0.08)",textAlign:"center"}}>
+          <p style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginBottom:4}}>{isAr?"إجمالي الثروة":"Total Value"}</p>
+          <p style={{fontSize:18,fontWeight:800,color:"#06b6d4"}}>{(total/1e6).toFixed(2)}M</p>
+        </div>
+        <div style={{padding:14,borderRadius:12,background:"rgba(16,185,129,0.08)",textAlign:"center"}}>
+          <p style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginBottom:4}}>{isAr?"صافي الربح":"Net Profit"}</p>
+          <p style={{fontSize:18,fontWeight:800,color:"#10b981"}}>+{(profit/1e6).toFixed(2)}M</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Market Chart
+const MarketChart = ({isAr}) => {
+  const max=Math.max(...MDATA.map(d=>d.v)), min=Math.min(...MDATA.map(d=>d.v));
+  const W=500,H=110;
+  const pts=MDATA.map((d,i)=>({
+    x:20+(i/(MDATA.length-1))*(W-40),
+    y:H-18-((d.v-min)/(max-min))*(H-38),
+    ...d
+  }));
+  const path=pts.map((p,i)=>`${i===0?"M":"L"}${p.x},${p.y}`).join(" ");
+  const area=path+` L${pts[pts.length-1].x},${H-18} L${pts[0].x},${H-18} Z`;
+  return (
+    <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:20,padding:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div>
+          <h3 style={{fontWeight:700,fontSize:14}}>{isAr?"مؤشر السوق الاستثماري":"Investment Market Index"}</h3>
+          <p style={{color:"#10b981",fontSize:12,fontWeight:600,marginTop:2}}>▲ +14.3% {isAr?"هذا العام":"YTD"}</p>
+        </div>
+        <span style={{fontSize:10,padding:"4px 10px",borderRadius:99,background:"rgba(16,185,129,0.15)",color:"#10b981",fontWeight:700}}>
+          {isAr?"مباشر":"LIVE"}
+        </span>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",overflow:"visible"}}>
+        <defs>
+          <linearGradient id="cgrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.3"/>
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#cgrad)"/>
+        <path d={path} fill="none" stroke="#06b6d4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        {pts.map((p,i)=>(
+          <circle key={i} cx={p.x} cy={p.y} r="4" fill="#06b6d4" stroke="#060d1a" strokeWidth="2"/>
+        ))}
+        {pts.map((p,i)=>(
+          <text key={i} x={p.x} y={H} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="8">
+            {isAr?p.m:p.me}
+          </text>
+        ))}
+      </svg>
+    </div>
+  );
+};
+
+// Map
+const MapView = ({opps,isAr,onView}) => {
+  const [sel,setSel]=useState(null);
+  const sCol=s=>SECTORS.find(x=>x.ar===s)?.color||"#06b6d4";
+  const cities=opps.map(o=>({
+    ...o,
+    x:((o.lng-35)/(52-35))*480+40,
+    y:((30-o.lat)/(30-18))*300+40,
+  }));
+  return (
+    <div style={{borderRadius:20,overflow:"hidden",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.07)",position:"relative"}}>
+      <div style={{padding:"16px 20px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div>
+          <h3 style={{fontWeight:700,fontSize:15}}>{isAr?"خريطة الفرص التفاعلية":"Interactive Opportunity Map"}</h3>
+          <p style={{fontSize:11,color:"rgba(255,255,255,0.35)",marginTop:2}}>{opps.length} {isAr?"فرصة":"opportunities"}</p>
+        </div>
+      </div>
+      <svg viewBox="0 0 560 370" style={{width:"100%",display:"block",background:"rgba(6,182,212,0.01)"}}>
+        <defs><radialGradient id="mg" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(6,182,212,0.04)"/><stop offset="100%" stopColor="transparent"/></radialGradient></defs>
+        <rect width="560" height="370" fill="url(#mg)"/>
+        {[1,2,3,4,5].map(i=><line key={i} x1={i*100} y1="0" x2={i*100} y2="370" stroke="rgba(6,182,212,0.04)" strokeWidth="1"/>)}
+        {[1,2,3].map(i=><line key={i} x1="0" y1={i*90} x2="560" y2={i*90} stroke="rgba(6,182,212,0.04)" strokeWidth="1"/>)}
+        <path d="M 90 55 L 155 45 L 215 55 L 285 48 L 355 65 L 415 98 L 468 132 L 492 185 L 480 248 L 445 298 L 395 325 L 348 342 L 290 352 L 230 340 L 192 308 L 165 268 L 142 218 L 115 195 L 88 168 L 68 128 Z"
+          fill="rgba(6,182,212,0.03)" stroke="rgba(6,182,212,0.18)" strokeWidth="1.5"/>
+        {cities.map(city=>{
+          const col=sCol(city.sector);
+          const isSel=sel?.id===city.id;
+          return (
+            <g key={city.id} onClick={()=>setSel(isSel?null:city)} style={{cursor:"pointer"}}>
+              <circle cx={city.x} cy={city.y} r={isSel?22:16} fill={`${col}15`} stroke={`${col}40`} strokeWidth="1"/>
+              <circle cx={city.x} cy={city.y} r={isSel?9:6} fill={isSel?col:`${col}CC`}/>
+              <text x={city.x} y={city.y+22} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="8.5" fontWeight="600">
+                {isAr?city.city:city.cityEn}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      {sel && (
+        <div style={{position:"absolute",bottom:12,left:12,right:12,background:"rgba(10,22,40,0.97)",border:"1px solid rgba(6,182,212,0.3)",borderRadius:16,padding:"14px 16px",display:"flex",gap:12,alignItems:"center"}}>
+          <img src={sel.image} style={{width:54,height:54,borderRadius:10,objectFit:"cover",flexShrink:0}} alt=""/>
+          <div style={{flex:1,minWidth:0}}>
+            <p style={{fontWeight:700,fontSize:13}}>{isAr?sel.title:sel.titleEn}</p>
+            <p style={{fontSize:11,color:"rgba(255,255,255,0.4)",marginTop:2}}>{isAr?sel.sector:sel.sectorEn} · {sel.roi}% ROI</p>
+            <FundBar pct={sel.fundedPct} isAr={isAr}/>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            <button onClick={()=>{onView(sel);setSel(null);}} style={{padding:"6px 14px",borderRadius:8,fontSize:11,fontWeight:700,background:"linear-gradient(135deg,#0891b2,#06b6d4)",color:"#fff",border:"none",cursor:"pointer"}}>
+              {isAr?"التفاصيل":"Details"}
+            </button>
+            <button onClick={()=>setSel(null)} style={{padding:4,borderRadius:8,background:"rgba(255,255,255,0.08)",border:"none",cursor:"pointer",display:"flex",justifyContent:"center"}}>
+              <SVGIcon name="x" size={12} color="rgba(255,255,255,0.5)"/>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Opportunity Card
+const OppCard = ({o,isAr,onView,saved,onSave,onCompare,inCompare}) => {
+  const si=SECTORS.find(s=>s.ar===o.sector);
+  const riskStyles={
+    "منخفض":{bg:"rgba(16,185,129,0.12)",c:"#10b981"},
+    "متوسط":{bg:"rgba(245,158,11,0.12)",c:"#f59e0b"},
+    "مرتفع":{bg:"rgba(239,68,68,0.12)",c:"#ef4444"},
+    "Low":{bg:"rgba(16,185,129,0.12)",c:"#10b981"},
+    "Medium":{bg:"rgba(245,158,11,0.12)",c:"#f59e0b"},
+    "High":{bg:"rgba(239,68,68,0.12)",c:"#ef4444"},
+  };
+  const rs=riskStyles[isAr?o.risk:o.riskEn]||riskStyles["متوسط"];
+  return (
+    <div style={{borderRadius:20,overflow:"hidden",background:"rgba(255,255,255,0.03)",border:`1px solid ${inCompare?"rgba(6,182,212,0.5)":"rgba(255,255,255,0.07)"}`,transition:"all 0.3s",cursor:"pointer"}}
+      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 20px 60px rgba(6,182,212,0.12)";}}
+      onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none";}}>
+      <div style={{position:"relative",height:175,overflow:"hidden"}}>
+        <img src={o.image} alt="" style={{width:"100%",height:"100%",objectFit:"cover",filter:"brightness(0.65)"}}/>
+        <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(10,22,40,0.95) 0%,rgba(10,22,40,0.1) 60%,transparent 100%)"}}/>
+        {o.tag && <span style={{position:"absolute",top:10,left:isAr?"auto":10,right:isAr?10:"auto",fontSize:10,fontWeight:800,padding:"3px 10px",borderRadius:99,background:"rgba(6,182,212,0.9)",color:"#fff"}}>{o.tag}</span>}
+        <div style={{position:"absolute",top:10,right:isAr?"auto":10,left:isAr?10:"auto",display:"flex",gap:5}}>
+          <button onClick={e=>{e.stopPropagation();onSave(o.id);}} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",background:saved?"rgba(239,68,68,0.85)":"rgba(0,0,0,0.55)",border:"none",cursor:"pointer"}}>
+            <SVGIcon name="heart" size={12} color="white"/>
+          </button>
+          <button onClick={e=>{e.stopPropagation();onCompare(o);}} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",background:inCompare?"rgba(6,182,212,0.85)":"rgba(0,0,0,0.55)",border:"none",cursor:"pointer"}}>
+            <SVGIcon name="compare" size={11} color="white"/>
+          </button>
+        </div>
+        <div style={{position:"absolute",bottom:10,left:isAr?"auto":12,right:isAr?12:"auto",display:"flex",alignItems:"center",gap:4}}>
+          <SVGIcon name="eye" size={11} color="rgba(255,255,255,0.4)"/>
+          <span style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>{o.views.toLocaleString()}</span>
+        </div>
+        <div style={{position:"absolute",bottom:8,right:isAr?"auto":8,left:isAr?8:"auto"}}>
+          <Ring v={o.score} size={48}/>
+        </div>
+        <div style={{position:"absolute",bottom:8,left:isAr?"auto":12,right:isAr?12:"auto"}}>
+          <p style={{fontSize:13,fontWeight:700,color:"#fff"}}>{isAr?o.title:o.titleEn}</p>
+          <p style={{fontSize:11,color:"rgba(255,255,255,0.5)",display:"flex",alignItems:"center",gap:3}}>
+            <SVGIcon name="pin" size={10} color="rgba(255,255,255,0.5)"/>{isAr?o.city:o.cityEn}
+          </p>
+        </div>
+      </div>
+      <div style={{padding:"13px 13px 15px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:9}}>
+          <span style={{fontSize:11,padding:"3px 9px",borderRadius:99,background:`${si?.color||"#06b6d4"}18`,color:si?.color||"#06b6d4",fontWeight:600}}>
+            {si?.icon} {isAr?o.sector:o.sectorEn}
+          </span>
+          <span style={{fontSize:11,padding:"3px 9px",borderRadius:99,background:rs.bg,color:rs.c,fontWeight:600}}>
+            {isAr?o.risk:o.riskEn}
+          </span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:9}}>
+          <div style={{padding:8,borderRadius:10,background:"rgba(255,255,255,0.03)",textAlign:"center"}}>
+            <p style={{fontSize:9,color:"rgba(255,255,255,0.35)",marginBottom:2}}>{isAr?"التكلفة":"Cost"}</p>
+            <p style={{fontSize:13,fontWeight:700}}>{(o.cost/1e6).toFixed(0)}<span style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>M</span></p>
+          </div>
+          <div style={{padding:8,borderRadius:10,background:"rgba(255,255,255,0.03)",textAlign:"center"}}>
+            <p style={{fontSize:9,color:"rgba(255,255,255,0.35)",marginBottom:2}}>{isAr?"العائد":"ROI"}</p>
+            <p style={{fontSize:13,fontWeight:700,color:"#10b981"}}>{o.roi}%</p>
+          </div>
+        </div>
+        <FundBar pct={o.fundedPct} isAr={isAr}/>
+        <div style={{display:"flex",gap:8,marginTop:11,alignItems:"center"}}>
+          <button onClick={()=>onView(o)} style={{flex:1,padding:9,borderRadius:10,fontSize:12,fontWeight:700,background:"linear-gradient(135deg,#0891b2,#06b6d4)",color:"#fff",border:"none",cursor:"pointer"}}>
+            {isAr?"عرض التفاصيل":"View Details"}
+          </button>
+          <span style={{fontSize:11,color:"#10b981",fontWeight:600,flexShrink:0}}>{o.trend}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Detail Modal
+const DetailModal = ({o,isAr,onClose,saved,onSave}) => {
+  const [tab,setTab]=useState("overview");
+  const [aiText,setAiText]=useState("");
+  const [aiLoading,setAiLoading]=useState(false);
+  const [booked,setBooked]=useState(false);
+
+  const genAI = async () => {
+    setAiLoading(true);
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:500,
+          messages:[{role:"user",content:`You are a senior investment analyst. Write a concise professional feasibility summary in ${isAr?"Arabic":"English"} for:
+- Project: ${isAr?o.title:o.titleEn}
+- Sector: ${isAr?o.sector:o.sectorEn}  
+- Location: ${isAr?o.city:o.cityEn}, Saudi Arabia
+- Investment Cost: SAR ${o.cost.toLocaleString()}
+- Expected ROI: ${o.roi}%
+- Risk Level: ${isAr?o.risk:o.riskEn}
+- Smart Score: ${o.score}/100
+- Funding Progress: ${o.fundedPct}%
+
+Write 3-4 sentences covering: key strengths, risks, and investment recommendation. Be professional.`}]
+        })
+      });
+      const d=await res.json();
+      setAiText(d.content?.[0]?.text||(isAr?"تعذّر التوليد.":"Could not generate."));
+    } catch { setAiText(isAr?"خطأ في الاتصال.":"Connection error."); }
+    setAiLoading(false);
+  };
+
+  return (
+    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",padding:16,background:"rgba(0,0,12,0.85)",backdropFilter:"blur(12px)"}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:640,maxHeight:"90vh",overflowY:"auto",borderRadius:24,background:"#0a1628",border:"1px solid rgba(6,182,212,0.2)"}}>
+        <div style={{position:"relative",height:210,overflow:"hidden",borderRadius:"24px 24px 0 0"}}>
+          <img src={o.image} alt="" style={{width:"100%",height:"100%",objectFit:"cover",filter:"brightness(0.55)"}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,#0a1628 0%,transparent 55%)"}}/>
+          <button onClick={onClose} style={{position:"absolute",top:12,right:12,width:32,height:32,borderRadius:9,background:"rgba(0,0,0,0.6)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <SVGIcon name="x" size={14} color="white"/>
+          </button>
+          <button onClick={()=>onSave(o.id)} style={{position:"absolute",top:12,left:12,width:32,height:32,borderRadius:9,background:saved?"rgba(239,68,68,0.8)":"rgba(0,0,0,0.6)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <SVGIcon name="heart" size={14} color="white"/>
+          </button>
+          <div style={{position:"absolute",bottom:12,left:isAr?"auto":18,right:isAr?18:"auto"}}>
+            <h2 style={{fontWeight:800,fontSize:19,color:"#fff"}}>{isAr?o.title:o.titleEn}</h2>
+            <p style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginTop:3}}>{isAr?o.city:o.cityEn} · {isAr?o.sector:o.sectorEn} · <span style={{color:"#10b981"}}>▲ {o.trend}</span></p>
+          </div>
+          <div style={{position:"absolute",bottom:10,right:isAr?"auto":12,left:isAr?12:"auto"}}>
+            <Ring v={o.score} size={56}/>
+          </div>
+        </div>
+        <div style={{padding:"0 20px 24px"}}>
+          <div style={{display:"flex",gap:2,padding:4,background:"rgba(255,255,255,0.04)",borderRadius:14,margin:"16px 0"}}>
+            {[{id:"overview",l:isAr?"نظرة عامة":"Overview"},{id:"finance",l:isAr?"المالية":"Financials"},{id:"ai",l:isAr?"تحليل AI":"AI Analysis"},{id:"book",l:isAr?"حجز":"Book"}].map(t=>(
+              <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"8px 4px",borderRadius:10,fontSize:12,fontWeight:600,background:tab===t.id?"rgba(6,182,212,0.2)":"transparent",color:tab===t.id?"#06b6d4":"rgba(255,255,255,0.4)",border:"none",cursor:"pointer",transition:"all 0.2s"}}>
+                {t.l}
+              </button>
+            ))}
+          </div>
+
+          {tab==="overview" && (
+            <div>
+              <p style={{color:"rgba(255,255,255,0.6)",fontSize:13,lineHeight:1.9,marginBottom:14}}>{isAr?o.description:o.descriptionEn}</p>
+              <FundBar pct={o.fundedPct} isAr={isAr}/>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:14}}>
+                {[{l:isAr?"القطاع":"Sector",v:isAr?o.sector:o.sectorEn,c:"#06b6d4"},{l:isAr?"المخاطرة":"Risk",v:isAr?o.risk:o.riskEn},{l:isAr?"المشاهدات":"Views",v:o.views.toLocaleString()}].map((s,i)=>(
+                  <div key={i} style={{padding:"10px",borderRadius:10,background:"rgba(255,255,255,0.04)",textAlign:"center"}}>
+                    <p style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:4}}>{s.l}</p>
+                    <p style={{fontWeight:700,fontSize:12,color:s.c||"#fff"}}>{s.v}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab==="finance" && (
+            <div style={{display:"flex",flexDirection:"column",gap:7}}>
+              {[
+                {l:isAr?"إجمالي التكلفة":"Total Cost",v:`SAR ${o.cost.toLocaleString()}`},
+                {l:isAr?"العائد السنوي المتوقع":"Expected Annual ROI",v:`${o.roi}%`,hi:true},
+                {l:isAr?"فترة الاسترداد":"Payback Period",v:`${Math.round(100/o.roi)} ${isAr?"سنوات":"years"}`},
+                {l:isAr?"نقاط الاستثمار الذكي":"Smart Score",v:`${o.score}/100`,hi:true},
+                {l:isAr?"نسبة التمويل":"Current Funding",v:`${o.fundedPct}%`},
+                {l:isAr?"اتجاه السوق":"Market Trend",v:`▲ ${o.trend}`,pos:true},
+              ].map((r,i)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"10px 13px",borderRadius:10,background:"rgba(255,255,255,0.03)"}}>
+                  <span style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>{r.l}</span>
+                  <span style={{fontSize:12,fontWeight:700,color:r.hi?"#06b6d4":r.pos?"#10b981":"#fff"}}>{r.v}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab==="ai" && (
+            <div>
+              <div style={{padding:16,borderRadius:14,background:"rgba(6,182,212,0.06)",border:"1px solid rgba(6,182,212,0.2)",marginBottom:12}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}>
+                  <SVGIcon name="ai" size={15} color="#06b6d4"/>
+                  <span style={{fontWeight:700,fontSize:13,color:"#06b6d4"}}>{isAr?"تحليل الذكاء الاصطناعي":"AI Feasibility Analysis"}</span>
+                </div>
+                {aiText
+                  ? <p style={{fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.9}}>{aiText}</p>
+                  : <p style={{fontSize:12,color:"rgba(255,255,255,0.3)"}}>{isAr?"اضغط لتوليد تحليل ذكي متخصص.":"Click below to generate an expert AI analysis."}</p>
+                }
+              </div>
+              <button onClick={genAI} disabled={aiLoading} style={{width:"100%",padding:"12px",borderRadius:12,fontSize:13,fontWeight:700,background:aiLoading?"rgba(6,182,212,0.3)":"linear-gradient(135deg,#0891b2,#06b6d4)",color:"#fff",border:"none",cursor:aiLoading?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                {aiLoading
+                  ? <><div style={{width:14,height:14,border:"2px solid rgba(255,255,255,0.3)",borderTopColor:"#fff",borderRadius:"50%"}} className="spin"/>{isAr?"جارٍ التحليل...":"Analyzing..."}</>
+                  : <><SVGIcon name="ai" size={15} color="white"/>{isAr?"توليد التحليل الذكي":"Generate AI Analysis"}</>
+                }
+              </button>
+            </div>
+          )}
+
+          {tab==="book" && (
+            <div>
+              {booked ? (
+                <div style={{textAlign:"center",padding:"28px 0"}}>
+                  <div style={{width:60,height:60,borderRadius:"50%",background:"rgba(16,185,129,0.15)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+                    <SVGIcon name="check" size={26} color="#10b981"/>
+                  </div>
+                  <h3 style={{fontWeight:800,fontSize:17,marginBottom:6}}>{isAr?"تم تسجيل اهتمامك!":"Interest Registered!"}</h3>
+                  <p style={{color:"rgba(255,255,255,0.4)",fontSize:13}}>{isAr?"سيتواصل معك مستشارنا خلال 24 ساعة":"Our consultant will contact you within 24 hours"}</p>
+                </div>
+              ) : (
+                <div>
+                  <p style={{fontSize:13,color:"rgba(255,255,255,0.5)",marginBottom:14,lineHeight:1.8}}>{isAr?"سجّل اهتمامك وسيتواصل معك مستشارنا المتخصص.":"Register your interest and our specialist will contact you with full details."}</p>
+                  {[isAr?"الاسم الكامل":"Full Name",isAr?"البريد الإلكتروني":"Email",isAr?"رقم الجوال":"Phone"].map((ph,i)=>(
+                    <input key={i} placeholder={ph} style={{width:"100%",padding:"11px 13px",borderRadius:10,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",color:"#fff",fontSize:13,outline:"none",marginBottom:9,display:"block"}}/>
+                  ))}
+                  <button onClick={()=>setBooked(true)} style={{width:"100%",padding:"13px",borderRadius:12,fontSize:13,fontWeight:700,background:"linear-gradient(135deg,#059669,#10b981)",color:"#fff",border:"none",cursor:"pointer",marginTop:4}}>
+                    {isAr?"تسجيل الاهتمام بالاستثمار":"Register Investment Interest"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Compare Panel
+const ComparePanel = ({opps,isAr,onClose}) => {
+  const metrics=[
+    {l:isAr?"التكلفة":"Cost",k:"cost",fmt:v=>`${(v/1e6).toFixed(0)}M SAR`},
+    {l:isAr?"العائد":"ROI",k:"roi",fmt:v=>`${v}%`,hi:true},
+    {l:"Smart Score",k:"score",fmt:v=>`${v}/100`,hi:true},
+    {l:isAr?"التمويل":"Funded",k:"fundedPct",fmt:v=>`${v}%`,hi:true},
+  ];
+  return (
+    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:60,background:"rgba(0,0,12,0.85)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:660,background:"#0a1628",border:"1px solid rgba(6,182,212,0.25)",borderRadius:22,overflow:"hidden"}}>
+        <div style={{padding:"18px 22px",borderBottom:"1px solid rgba(255,255,255,0.07)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <h2 style={{fontWeight:800,fontSize:17}}>{isAr?"مقارنة الفرص":"Compare Opportunities"}</h2>
+          <button onClick={onClose} style={{width:30,height:30,borderRadius:8,background:"rgba(255,255,255,0.08)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <SVGIcon name="x" size={13} color="rgba(255,255,255,0.6)"/>
+          </button>
+        </div>
+        <div style={{padding:22,overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse"}}>
+            <thead>
+              <tr>
+                <th style={{textAlign:isAr?"right":"left",padding:"8px 10px",color:"rgba(255,255,255,0.4)",fontSize:11,width:"30%"}}>{isAr?"المعيار":"Metric"}</th>
+                {opps.map(o=>(
+                  <th key={o.id} style={{textAlign:"center",padding:"8px 10px"}}>
+                    <div style={{fontSize:11,fontWeight:700,color:"#06b6d4"}}>{isAr?o.title:o.titleEn}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>{isAr?o.city:o.cityEn}</div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.map((m,i)=>(
+                <tr key={i} style={{background:i%2===0?"rgba(255,255,255,0.02)":"transparent"}}>
+                  <td style={{padding:"9px 10px",fontSize:12,color:"rgba(255,255,255,0.6)"}}>{m.l}</td>
+                  {opps.map(o=>{
+                    const v=o[m.k];
+                    const isTop=m.hi&&opps.every(x=>x[m.k]<=v);
+                    return (
+                      <td key={o.id} style={{textAlign:"center",padding:"9px 10px",fontSize:12,fontWeight:600,color:isTop?"#10b981":"#fff"}}>
+                        {m.fmt(v)}{isTop?" ✓":""}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Messaging
+const Messaging = ({isAr}) => {
+  const [activeCon,setActiveCon]=useState(0);
+  const [msgs,setMsgs]=useState([
+    {id:1,from:"c",text:isAr?"مرحباً! أنا هنا لمساعدتك في تقييم الفرص الاستثمارية.":"Hello! I'm here to help you evaluate investment opportunities.",time:"10:30"},
+    {id:2,from:"i",text:isAr?"أريد معرفة المزيد عن منتجع جدة الساحلي.":"I'd like to know more about the Jeddah coastal resort.",time:"10:32"},
+    {id:3,from:"c",text:isAr?"المشروع يوفر عائداً 18٪ مع مخاطر منخفضة جداً، التمويل وصل 85٪.":"This project offers 18% ROI with very low risk, funding reached 85%.",time:"10:34"},
+  ]);
+  const [input,setInput]=useState("");
+  const bottomRef=useRef(null);
+  const send=()=>{
+    if(!input.trim())return;
+    const now=new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"});
+    setMsgs(m=>[...m,{id:Date.now(),from:"i",text:input,time:now}]);
+    setInput("");
+    setTimeout(()=>{
+      setMsgs(m=>[...m,{id:Date.now()+1,from:"c",text:isAr?"شكراً، سأرسل دراسة جدوى تفصيلية.":"Thank you, I'll send a detailed feasibility study.",time:new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"})}]);
+    },1400);
+  };
+  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[msgs]);
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"190px 1fr",height:460,borderRadius:20,overflow:"hidden",border:"1px solid rgba(255,255,255,0.07)"}}>
+      <div style={{background:"rgba(255,255,255,0.02)",borderRight:"1px solid rgba(255,255,255,0.06)",padding:10}}>
+        <p style={{fontSize:10,color:"rgba(255,255,255,0.3)",fontWeight:600,marginBottom:8,padding:"0 4px"}}>{isAr?"المحادثات":"CHATS"}</p>
+        {CONSULTANTS.map((c,i)=>(
+          <div key={c.id} onClick={()=>setActiveCon(i)} style={{padding:"9px 8px",borderRadius:9,cursor:"pointer",background:activeCon===i?"rgba(6,182,212,0.1)":"transparent",marginBottom:3,display:"flex",alignItems:"center",gap:7}}>
+            <div style={{width:30,height:30,borderRadius:9,background:"rgba(6,182,212,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#06b6d4",flexShrink:0,position:"relative"}}>
+              {c.avatar}
+              {i===0&&<span style={{position:"absolute",bottom:-1,right:-1,width:7,height:7,borderRadius:"50%",background:"#10b981",border:"1.5px solid #060d1a"}}/>}
+            </div>
+            <div style={{minWidth:0}}>
+              <p style={{fontSize:11,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{isAr?c.name.split(" ").slice(-1)[0]:c.nameEn.split(" ").slice(-1)[0]}</p>
+              <p style={{fontSize:9,color:"rgba(255,255,255,0.3)"}}>{isAr?c.specialty.split(" ")[0]:c.specialtyEn.split(" ")[0]}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",flexDirection:"column",background:"#0a1628"}}>
+        <div style={{padding:"11px 15px",borderBottom:"1px solid rgba(255,255,255,0.06)",display:"flex",alignItems:"center",gap:9}}>
+          <div style={{width:34,height:34,borderRadius:9,background:"rgba(6,182,212,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#06b6d4"}}>{CONSULTANTS[activeCon].avatar}</div>
+          <div>
+            <p style={{fontSize:13,fontWeight:700}}>{isAr?CONSULTANTS[activeCon].name:CONSULTANTS[activeCon].nameEn}</p>
+            <p style={{fontSize:10,color:"#10b981"}}>● {isAr?"متاح":"Online"}</p>
+          </div>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"13px 14px",display:"flex",flexDirection:"column",gap:9}}>
+          {msgs.map(m=>(
+            <div key={m.id} style={{display:"flex",justifyContent:m.from==="i"?(isAr?"flex-start":"flex-end"):(isAr?"flex-end":"flex-start")}}>
+              <div style={{maxWidth:"70%",padding:"8px 12px",borderRadius:m.from==="i"?(isAr?"16px 16px 16px 4px":"16px 16px 4px 16px"):(isAr?"16px 16px 4px 16px":"16px 16px 16px 4px"),background:m.from==="i"?"rgba(6,182,212,0.18)":"rgba(255,255,255,0.07)"}}>
+                <p style={{fontSize:12,color:"#fff"}}>{m.text}</p>
+                <p style={{fontSize:9,color:"rgba(255,255,255,0.3)",marginTop:3,textAlign:"right"}}>{m.time}</p>
+              </div>
+            </div>
+          ))}
+          <div ref={bottomRef}/>
+        </div>
+        <div style={{padding:"9px 11px",borderTop:"1px solid rgba(255,255,255,0.06)",display:"flex",gap:7}}>
+          <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder={isAr?"اكتب رسالتك...":"Type a message..."}
+            style={{flex:1,padding:"8px 13px",borderRadius:9,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",color:"#fff",fontSize:12,outline:"none"}}/>
+          <button onClick={send} style={{width:36,height:36,borderRadius:9,background:"linear-gradient(135deg,#0891b2,#06b6d4)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <SVGIcon name="send" size={13} color="white"/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+const App = () => {
+  const [lang,setLang]=useState("ar");
+  const [page,setPage]=useState("home");
+  const [viewMode,setViewMode]=useState("grid");
+  const [sel,setSel]=useState(null);
+  const [saved,setSaved]=useState([2,5]);
+  const [compareList,setCompareList]=useState([]);
+  const [showCompare,setShowCompare]=useState(false);
+  const [search,setSearch]=useState("");
+  const [filters,setFilters]=useState({sector:"",risk:""});
+  const [notifOpen,setNotifOpen]=useState(false);
+  const isAr=lang==="ar";
+
+  const filtered=OPPORTUNITIES.filter(o=>{
+    const q=search.toLowerCase();
+    const tMatch=!q||(isAr?o.title:o.titleEn).toLowerCase().includes(q)||(isAr?o.city:o.cityEn).toLowerCase().includes(q);
+    const sMatch=!filters.sector||(isAr?o.sector:o.sectorEn)===filters.sector;
+    const rMatch=!filters.risk||(isAr?o.risk:o.riskEn)===filters.risk;
+    return tMatch&&sMatch&&rMatch;
+  });
+
+  const toggleSave=id=>setSaved(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+  const toggleCompare=o=>setCompareList(c=>c.find(x=>x.id===o.id)?c.filter(x=>x.id!==o.id):c.length<3?[...c,o]:c);
+
+  const navLinks=[
+    {id:"home",l:isAr?"الرئيسية":"Home",icon:"home"},
+    {id:"opportunities",l:isAr?"الفرص":"Opportunities",icon:"brief"},
+    {id:"map",l:isAr?"الخريطة":"Map",icon:"map"},
+    {id:"consultants",l:isAr?"المستشارون":"Consultants",icon:"users"},
+    {id:"tools",l:isAr?"أدوات":"Tools",icon:"calc"},
+    {id:"dashboard",l:isAr?"لوحتي":"Dashboard",icon:"chart"},
+    {id:"messages",l:isAr?"الرسائل":"Messages",icon:"msg"},
+  ];
+
+  const notifs=isAr
+    ?["فرصة جديدة في الرياض تطابق اهتماماتك","مستشارك أرسل دراسة جدوى جديدة","محطة تبوك وصلت 92٪ تمويل"]
+    :["New opportunity in Riyadh matches your interests","Your consultant sent a feasibility study","Tabuk station reached 92% funding"];
+
+  return (
+    <div dir={isAr?"rtl":"ltr"} style={{minHeight:"100vh",background:"#060d1a",color:"#fff",fontFamily:isAr?"'Tajawal','Cairo',sans-serif":"'DM Sans',sans-serif"}}>
+
+      {/* NEWS TICKER */}
+      <NewsTicker isAr={isAr}/>
+
+      {/* NAVBAR */}
+      <nav style={{position:"sticky",top:0,zIndex:40,background:"rgba(6,13,26,0.95)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(6,182,212,0.1)"}}>
+        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 16px",height:62,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <div onClick={()=>setPage("home")} style={{display:"flex",alignItems:"center",gap:9,cursor:"pointer",flexShrink:0}}>
+            <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#0891b2,#06b6d4)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 18px rgba(6,182,212,0.4)"}}>
+              <SVGIcon name="trend" size={17} color="white"/>
+            </div>
+            <div>
+              <p style={{fontWeight:800,fontSize:13,lineHeight:1}}>{isAr?"المستثمر الذكي":"Smart Investor"}</p>
+              <p style={{fontSize:9,color:"#06b6d4",letterSpacing:"0.1em",marginTop:1}}>VISION 2030</p>
+            </div>
+          </div>
+
+          <div style={{display:"flex",gap:2,background:"rgba(255,255,255,0.03)",padding:4,borderRadius:13,overflowX:"auto",maxWidth:"calc(100vw - 240px)"}}>
+            {navLinks.map(l=>(
+              <button key={l.id} onClick={()=>setPage(l.id)} style={{padding:"6px 11px",borderRadius:9,fontSize:11,fontWeight:600,background:page===l.id?"rgba(6,182,212,0.2)":"transparent",color:page===l.id?"#06b6d4":"rgba(255,255,255,0.45)",border:"none",cursor:"pointer",whiteSpace:"nowrap",transition:"all 0.2s"}}>
+                {l.l}
+              </button>
+            ))}
+          </div>
+
+          <div style={{display:"flex",alignItems:"center",gap:7,flexShrink:0}}>
+            {compareList.length>0&&(
+              <button onClick={()=>setShowCompare(true)} style={{padding:"5px 11px",borderRadius:9,fontSize:11,fontWeight:700,background:"rgba(6,182,212,0.15)",color:"#06b6d4",border:"1px solid rgba(6,182,212,0.25)",cursor:"pointer"}}>
+                {isAr?`مقارنة (${compareList.length})`:`Compare (${compareList.length})`}
+              </button>
+            )}
+            <button onClick={()=>setLang(l=>l==="ar"?"en":"ar")} style={{padding:"5px 10px",borderRadius:9,fontSize:11,fontWeight:800,background:"rgba(6,182,212,0.1)",color:"#06b6d4",border:"1px solid rgba(6,182,212,0.2)",cursor:"pointer"}}>
+              {isAr?"EN":"عربي"}
+            </button>
+            <div style={{position:"relative"}}>
+              <button onClick={()=>setNotifOpen(n=>!n)} style={{width:32,height:32,borderRadius:9,background:"rgba(255,255,255,0.06)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+                <SVGIcon name="bell" size={15} color="rgba(255,255,255,0.5)"/>
+                <span style={{position:"absolute",top:6,right:6,width:6,height:6,borderRadius:"50%",background:"#06b6d4",border:"1.5px solid #060d1a"}} className="pulse"/>
+              </button>
+              {notifOpen&&(
+                <div style={{position:"absolute",top:"calc(100% + 8px)",right:0,width:270,background:"#0d1f38",border:"1px solid rgba(6,182,212,0.2)",borderRadius:13,padding:12,boxShadow:"0 20px 60px rgba(0,0,0,0.5)",zIndex:99}}>
+                  <p style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.4)",marginBottom:8}}>{isAr?"الإشعارات":"NOTIFICATIONS"}</p>
+                  {notifs.map((n,i)=>(
+                    <div key={i} style={{padding:"9px",borderRadius:9,background:i===0?"rgba(6,182,212,0.08)":"transparent",marginBottom:3}}>
+                      <p style={{fontSize:11,color:"rgba(255,255,255,0.7)",lineHeight:1.6}}>{n}</p>
+                      {i===0&&<p style={{fontSize:10,color:"#06b6d4",marginTop:2}}>{isAr?"الآن":"Just now"}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* CONTENT */}
+      <main style={{maxWidth:1280,margin:"0 auto",padding:"24px 16px 90px"}}>
+
+        {/* HOME */}
+        {page==="home"&&(
+          <div className="fu">
+            {/* Hero */}
+            <div style={{position:"relative",textAlign:"center",padding:"50px 20px 44px",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,pointerEvents:"none"}}>
+                <div style={{position:"absolute",top:"15%",left:"10%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(6,182,212,0.07) 0%,transparent 70%)",filter:"blur(50px)"}}/>
+                <div style={{position:"absolute",bottom:"10%",right:"5%",width:350,height:350,borderRadius:"50%",background:"radial-gradient(circle,rgba(16,185,129,0.05) 0%,transparent 70%)",filter:"blur(40px)"}}/>
+                {[...Array(5)].map((_,i)=>(
+                  <div key={i} style={{position:"absolute",width:5+i*2,height:5+i*2,borderRadius:"50%",background:`rgba(6,182,212,${0.35-i*0.05})`,top:`${18+i*14}%`,left:`${10+i*18}%`}} className="pulse"/>
+                ))}
+              </div>
+              <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(6,182,212,0.08)",border:"1px solid rgba(6,182,212,0.2)",borderRadius:99,padding:"6px 16px",marginBottom:22}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:"#06b6d4"}} className="pulse"/>
+                <span style={{fontSize:12,color:"#06b6d4",fontWeight:600}}>{isAr?"المنصة الاستثمارية الأذكى في المملكة":"Saudi Arabia's Smartest Investment Platform"}</span>
+              </div>
+              <h1 style={{fontSize:"clamp(2rem,5vw,3.6rem)",fontWeight:800,lineHeight:1.1,marginBottom:16}}>
+                <span className="teal-text">{isAr?"استثمر بذكاء":"Invest Smarter"}</span><br/>
+                <span style={{color:"rgba(255,255,255,0.88)"}}>{isAr?"في مستقبل المملكة العربية السعودية":"in Saudi Arabia's Future"}</span>
+              </h1>
+              <p style={{color:"rgba(255,255,255,0.4)",fontSize:"clamp(0.9rem,2vw,1.05rem)",maxWidth:520,margin:"0 auto 32px",lineHeight:1.9}}>
+                {isAr?"اكتشف أفضل الفرص الاستثمارية عبر 13 منطقة مع تحليل ذكاء اصطناعي ومستشارين معتمدين":"Discover top investment opportunities across 13 regions with AI analysis and certified consultants"}
+              </p>
+              <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
+                <button onClick={()=>setPage("opportunities")} style={{padding:"13px 28px",borderRadius:12,fontWeight:700,fontSize:14,background:"linear-gradient(135deg,#0891b2,#06b6d4)",color:"#fff",border:"none",cursor:"pointer",boxShadow:"0 8px 28px rgba(6,182,212,0.3)"}}>
+                  {isAr?"استكشف الفرص":"Explore Opportunities"}
+                </button>
+                <button onClick={()=>setPage("tools")} style={{padding:"13px 24px",borderRadius:12,fontWeight:600,fontSize:14,background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.75)",border:"1px solid rgba(255,255,255,0.1)",cursor:"pointer"}}>
+                  🧮 {isAr?"حاسبة العائد":"ROI Calculator"}
+                </button>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:36}}>
+              {[
+                {v:"200+",l:isAr?"فرصة استثمارية":"Opportunities",c:"#06b6d4"},
+                {v:"13",l:isAr?"منطقة مغطاة":"Regions",c:"#10b981"},
+                {v:"50+",l:isAr?"مستشار معتمد":"Consultants",c:"#f59e0b"},
+                {v:"SAR 2.4B",l:isAr?"حجم الاستثمارات":"Total Volume",c:"#8b5cf6"},
+              ].map((s,i)=>(
+                <div key={i} style={{padding:"18px 14px",borderRadius:16,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",textAlign:"center"}}>
+                  <p style={{fontSize:22,fontWeight:800,color:s.c}}>{s.v}</p>
+                  <p style={{fontSize:11,color:"rgba(255,255,255,0.35)",marginTop:4}}>{s.l}</p>
+                </div>
+              ))}
+            </div>
+
+            <div style={{marginBottom:32}}><MarketChart isAr={isAr}/></div>
+
+            <div style={{marginBottom:32}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <h2 style={{fontWeight:800,fontSize:19}}>🌟 {isAr?"الفرص المميزة":"Featured Opportunities"}</h2>
+                <button onClick={()=>setPage("opportunities")} style={{fontSize:12,color:"#06b6d4",background:"none",border:"none",cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:3}}>
+                  {isAr?"عرض الكل":"View all"} <SVGIcon name={isAr?"left":"right"} size={13} color="#06b6d4"/>
+                </button>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:14}}>
+                {OPPORTUNITIES.filter(o=>o.tag).slice(0,4).map(o=>(
+                  <OppCard key={o.id} o={o} isAr={isAr} onView={setSel} saved={saved.includes(o.id)} onSave={toggleSave} onCompare={toggleCompare} inCompare={compareList.some(c=>c.id===o.id)}/>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 style={{fontWeight:800,fontSize:19,marginBottom:14}}>{isAr?"القطاعات الاستثمارية":"Investment Sectors"}</h2>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:9}}>
+                {SECTORS.map(s=>(
+                  <button key={s.ar} onClick={()=>{setFilters(f=>({...f,sector:isAr?s.ar:s.en}));setPage("opportunities");}}
+                    style={{padding:"13px 8px",borderRadius:13,background:"rgba(255,255,255,0.03)",border:`1px solid ${s.color}22`,cursor:"pointer",textAlign:"center",transition:"all 0.2s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.background=`${s.color}12`;e.currentTarget.style.transform="scale(1.04)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.03)";e.currentTarget.style.transform="scale(1)";}}>
+                    <div style={{fontSize:22,marginBottom:5}}>{s.icon}</div>
+                    <p style={{fontSize:11,fontWeight:600,color:s.color}}>{isAr?s.ar:s.en}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* OPPORTUNITIES */}
+        {page==="opportunities"&&(
+          <div className="fu">
+            <div style={{marginBottom:20}}>
+              <h1 style={{fontWeight:800,fontSize:22}}>{isAr?"الفرص الاستثمارية":"Investment Opportunities"}</h1>
+              <p style={{color:"rgba(255,255,255,0.35)",fontSize:12,marginTop:3}}>{filtered.length} {isAr?"فرصة متاحة":"available"}</p>
+            </div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:9,marginBottom:20}}>
+              <div style={{position:"relative",flex:"1 1 180px"}}>
+                <span style={{position:"absolute",top:"50%",transform:"translateY(-50%)",[isAr?"right":"left"]:11,pointerEvents:"none"}}>
+                  <SVGIcon name="search" size={14} color="rgba(255,255,255,0.3)"/>
+                </span>
+                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={isAr?"ابحث...":"Search..."}
+                  style={{width:"100%",padding:isAr?"9px 36px 9px 12px":"9px 12px 9px 36px",borderRadius:10,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",color:"#fff",fontSize:13,outline:"none"}}/>
+              </div>
+              <select value={filters.sector} onChange={e=>setFilters(p=>({...p,sector:e.target.value}))}
+                style={{padding:"9px 12px",borderRadius:10,background:"rgba(255,255,255,0.05)",border:`1px solid ${filters.sector?"rgba(6,182,212,0.4)":"rgba(255,255,255,0.1)"}`,color:filters.sector?"#06b6d4":"rgba(255,255,255,0.4)",fontSize:12,outline:"none",cursor:"pointer"}}>
+                <option value="">{isAr?"القطاع":"Sector"}</option>
+                {SECTORS.map(s=><option key={s.ar} value={isAr?s.ar:s.en}>{s.icon} {isAr?s.ar:s.en}</option>)}
+              </select>
+              <select value={filters.risk} onChange={e=>setFilters(p=>({...p,risk:e.target.value}))}
+                style={{padding:"9px 12px",borderRadius:10,background:"rgba(255,255,255,0.05)",border:`1px solid ${filters.risk?"rgba(6,182,212,0.4)":"rgba(255,255,255,0.1)"}`,color:filters.risk?"#06b6d4":"rgba(255,255,255,0.4)",fontSize:12,outline:"none",cursor:"pointer"}}>
+                <option value="">{isAr?"المخاطرة":"Risk"}</option>
+                {isAr?["منخفض","متوسط","مرتفع"].map(r=><option key={r} value={r}>{r}</option>):["Low","Medium","High"].map(r=><option key={r} value={r}>{r}</option>)}
+              </select>
+              {(filters.sector||filters.risk||search)&&(
+                <button onClick={()=>{setFilters({sector:"",risk:""});setSearch("");}}
+                  style={{padding:"9px 12px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.2)",color:"#f87171",fontSize:12,cursor:"pointer"}}>
+                  {isAr?"مسح":"Clear"}
+                </button>
+              )}
+              <div style={{display:"flex",gap:3,background:"rgba(255,255,255,0.04)",padding:4,borderRadius:10}}>
+                {["grid","list"].map(v=>(
+                  <button key={v} onClick={()=>setViewMode(v)} style={{width:32,height:32,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",background:viewMode===v?"rgba(6,182,212,0.2)":"transparent",border:"none",cursor:"pointer"}}>
+                    <SVGIcon name={v} size={14} color={viewMode===v?"#06b6d4":"rgba(255,255,255,0.3)"}/>
+                  </button>
+                ))}
+              </div>
+            </div>
+            {viewMode==="grid"?(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:14}}>
+                {filtered.map(o=><OppCard key={o.id} o={o} isAr={isAr} onView={setSel} saved={saved.includes(o.id)} onSave={toggleSave} onCompare={toggleCompare} inCompare={compareList.some(c=>c.id===o.id)}/>)}
+              </div>
+            ):(
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {filtered.map(o=>{
+                  const si=SECTORS.find(s=>s.ar===o.sector);
+                  return (
+                    <div key={o.id} onClick={()=>setSel(o)} style={{display:"flex",gap:12,padding:13,borderRadius:15,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",cursor:"pointer",transition:"all 0.2s"}}
+                      onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(6,182,212,0.3)"}
+                      onMouseLeave={e=>e.currentTarget.style.borderColor="rgba(255,255,255,0.07)"}>
+                      <img src={o.image} style={{width:76,height:76,borderRadius:11,objectFit:"cover",flexShrink:0}} alt=""/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+                          <p style={{fontWeight:700,fontSize:14}}>{isAr?o.title:o.titleEn}</p>
+                          {o.tag&&<span style={{fontSize:10,padding:"2px 7px",borderRadius:99,background:"rgba(6,182,212,0.15)",color:"#06b6d4"}}>{o.tag}</span>}
+                        </div>
+                        <p style={{fontSize:11,color:"rgba(255,255,255,0.4)",marginTop:2}}>{isAr?o.city:o.cityEn} · {si?.icon} {isAr?o.sector:o.sectorEn}</p>
+                        <div style={{display:"flex",gap:12,marginTop:5}}>
+                          <span style={{fontSize:11,color:"#10b981",fontWeight:600}}>ROI {o.roi}%</span>
+                          <span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{(o.cost/1e6).toFixed(0)}M SAR</span>
+                          <span style={{fontSize:11,color:"#06b6d4",fontWeight:700}}>▲ {o.trend}</span>
+                        </div>
+                        <div style={{marginTop:6,maxWidth:220}}><FundBar pct={o.fundedPct} isAr={isAr}/></div>
+                      </div>
+                      <div style={{alignSelf:"center"}}><Ring v={o.score} size={46}/></div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MAP */}
+        {page==="map"&&(
+          <div className="fu">
+            <div style={{marginBottom:18}}>
+              <h1 style={{fontWeight:800,fontSize:22}}>{isAr?"خريطة الاستثمارات التفاعلية":"Interactive Investment Map"}</h1>
+              <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:3}}>{isAr?"استكشف الفرص جغرافياً عبر مناطق المملكة":"Explore opportunities geographically across Saudi Arabia"}</p>
+            </div>
+            <MapView opps={filtered} isAr={isAr} onView={setSel}/>
+          </div>
+        )}
+
+        {/* CONSULTANTS */}
+        {page==="consultants"&&(
+          <div className="fu">
+            <div style={{marginBottom:20}}>
+              <h1 style={{fontWeight:800,fontSize:22}}>{isAr?"المستشارون الماليون":"Financial Consultants"}</h1>
+              <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:3}}>{isAr?"تواصل مع أفضل المستشارين في المملكة":"Connect with Saudi Arabia's top advisors"}</p>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))",gap:14}}>
+              {CONSULTANTS.map(c=>(
+                <div key={c.id} style={{borderRadius:20,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",padding:20,transition:"all 0.3s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(6,182,212,0.3)";e.currentTarget.style.transform="translateY(-3px)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.07)";e.currentTarget.style.transform="translateY(0)";}}>
+                  <div style={{display:"flex",gap:13,marginBottom:15}}>
+                    <div style={{width:54,height:54,borderRadius:15,background:"rgba(6,182,212,0.12)",border:"1px solid rgba(6,182,212,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:800,color:"#06b6d4",flexShrink:0,position:"relative"}}>
+                      {c.avatar}
+                      {c.verified&&<div style={{position:"absolute",bottom:-3,right:-3,width:17,height:17,borderRadius:"50%",background:"#10b981",border:"2px solid #060d1a",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <SVGIcon name="check" size={9} color="white"/>
+                      </div>}
+                    </div>
+                    <div>
+                      <p style={{fontWeight:800,fontSize:14}}>{isAr?c.name:c.nameEn}</p>
+                      <p style={{fontSize:11,color:"rgba(255,255,255,0.4)",marginTop:2}}>{isAr?c.specialty:c.specialtyEn}</p>
+                      <p style={{fontSize:10,color:"rgba(255,255,255,0.3)",display:"flex",alignItems:"center",gap:3,marginTop:3}}>
+                        <SVGIcon name="pin" size={9} color="rgba(255,255,255,0.3)"/>{isAr?c.city:c.cityEn}
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginBottom:13}}>
+                    {[{l:isAr?"التقييم":"Rating",v:c.rating,c:"#f59e0b"},{l:isAr?"الدراسات":"Studies",v:c.studies},{l:isAr?"العملاء":"Clients",v:c.clients}].map((s,i)=>(
+                      <div key={i} style={{textAlign:"center",padding:"8px 5px",borderRadius:9,background:"rgba(255,255,255,0.04)"}}>
+                        <p style={{fontSize:13,fontWeight:800,color:s.c||"#fff"}}>{s.v}</p>
+                        <p style={{fontSize:9,color:"rgba(255,255,255,0.3)",marginTop:2}}>{s.l}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{fontSize:11,color:"rgba(255,255,255,0.4)",marginBottom:11}}>{isAr?"وقت الاستجابة: ":"Response: "}<span style={{color:"#10b981"}}>{isAr?c.responseTimeAr:c.responseTimeEn}</span></p>
+                  <button onClick={()=>setPage("messages")} style={{width:"100%",padding:"10px",borderRadius:10,fontSize:12,fontWeight:700,background:"linear-gradient(135deg,#0891b2,#06b6d4)",color:"#fff",border:"none",cursor:"pointer"}}>
+                    💬 {isAr?"تواصل الآن":"Contact Now"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TOOLS */}
+        {page==="tools"&&(
+          <div className="fu">
+            <div style={{marginBottom:20}}>
+              <h1 style={{fontWeight:800,fontSize:22}}>{isAr?"أدوات الاستثمار الذكية":"Smart Investment Tools"}</h1>
+              <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:3}}>{isAr?"استخدم أدواتنا لاتخاذ قرارات مدروسة":"Use our tools to make informed decisions"}</p>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:18}}>
+              <Calculator isAr={isAr}/>
+              <MarketChart isAr={isAr}/>
+              {/* Sector breakdown */}
+              <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:20,padding:20}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+                  <div style={{width:34,height:34,borderRadius:9,background:"rgba(139,92,246,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <SVGIcon name="chart" size={15} color="#8b5cf6"/>
+                  </div>
+                  <h3 style={{fontWeight:800,fontSize:14}}>{isAr?"توزيع القطاعات":"Sector Distribution"}</h3>
+                </div>
+                {SECTORS.map(s=>{
+                  const count=OPPORTUNITIES.filter(o=>o.sector===s.ar).length;
+                  const pct=(count/OPPORTUNITIES.length)*100;
+                  return count>0?(
+                    <div key={s.ar} style={{marginBottom:10}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                        <span style={{fontSize:12,color:"rgba(255,255,255,0.6)"}}>{s.icon} {isAr?s.ar:s.en}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:s.color}}>{count}</span>
+                      </div>
+                      <div style={{height:5,borderRadius:99,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                        <div style={{height:"100%",width:`${pct}%`,background:s.color,borderRadius:99}}/>
+                      </div>
+                    </div>
+                  ):null;
+                })}
+              </div>
+              {/* Risk Matrix */}
+              <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:20,padding:20}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                  <div style={{width:34,height:34,borderRadius:9,background:"rgba(245,158,11,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <SVGIcon name="shield" size={15} color="#f59e0b"/>
+                  </div>
+                  <h3 style={{fontWeight:800,fontSize:14}}>{isAr?"مصفوفة المخاطر والعائد":"Risk vs Return"}</h3>
+                </div>
+                <div style={{position:"relative",height:180,background:"rgba(255,255,255,0.02)",borderRadius:10,overflow:"hidden",marginBottom:8}}>
+                  <div style={{position:"absolute",left:10,top:8,bottom:18,width:1,background:"rgba(255,255,255,0.08)"}}/>
+                  <div style={{position:"absolute",left:10,right:8,bottom:18,height:1,background:"rgba(255,255,255,0.08)"}}/>
+                  <span style={{position:"absolute",bottom:4,left:12,fontSize:8,color:"rgba(255,255,255,0.2)"}}>{isAr?"منخفض":"Low"}</span>
+                  <span style={{position:"absolute",bottom:4,right:8,fontSize:8,color:"rgba(255,255,255,0.2)"}}>{isAr?"مرتفع":"High"}</span>
+                  <span style={{position:"absolute",top:4,left:14,fontSize:8,color:"rgba(255,255,255,0.2)",writingMode:"vertical-lr"}}>{isAr?"عائد↑":"ROI↑"}</span>
+                  {OPPORTUNITIES.slice(0,6).map(o=>{
+                    const riskNum=o.risk==="منخفض"?0.15:o.risk==="متوسط"?0.5:0.85;
+                    const roiN=(o.roi-15)/(35-15);
+                    const si=SECTORS.find(s=>s.ar===o.sector);
+                    return (
+                      <div key={o.id} onClick={()=>setSel(o)} style={{position:"absolute",left:`${riskNum*80+12}%`,bottom:`${roiN*70+14}%`,transform:"translate(-50%,50%)",cursor:"pointer"}}>
+                        <div style={{width:26,height:26,borderRadius:"50%",background:`${si?.color||"#06b6d4"}33`,border:`2px solid ${si?.color||"#06b6d4"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10}} title={isAr?o.title:o.titleEn}>
+                          {si?.icon}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p style={{fontSize:10,color:"rgba(255,255,255,0.3)",textAlign:"center"}}>{isAr?"انقر على أي نقطة لعرض تفاصيل الفرصة":"Click any dot to view opportunity details"}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* DASHBOARD */}
+        {page==="dashboard"&&(
+          <div className="fu">
+            <div style={{marginBottom:20}}>
+              <h1 style={{fontWeight:800,fontSize:22}}>{isAr?"لوحة التحكم":"Dashboard"}</h1>
+              <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:3}}>{isAr?"تتبع نشاطك الاستثماري":"Track your investment activity"}</p>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:24}}>
+              {[
+                {l:isAr?"محفوظة":"Saved",v:saved.length,icon:"heart",c:"#ef4444"},
+                {l:isAr?"المشاهدات":"Viewed",v:47,icon:"eye",c:"#06b6d4"},
+                {l:isAr?"الرسائل":"Messages",v:3,icon:"msg",c:"#f59e0b"},
+                {l:isAr?"متوسط العائد":"Avg ROI",v:"24%",icon:"trend",c:"#10b981"},
+                {l:isAr?"مقارنة":"Compare",v:compareList.length,icon:"compare",c:"#8b5cf6"},
+              ].map((s,i)=>(
+                <div key={i} style={{padding:"15px 13px",borderRadius:15,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                  <div style={{width:30,height:30,borderRadius:8,background:`${s.c}1a`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:7}}>
+                    <SVGIcon name={s.icon} size={14} color={s.c}/>
+                  </div>
+                  <p style={{fontSize:19,fontWeight:800}}>{s.v}</p>
+                  <p style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:2}}>{s.l}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:18}}>
+              <div>
+                <h3 style={{fontWeight:700,fontSize:14,marginBottom:13}}>{isAr?"الفرص المحفوظة":"Saved Opportunities"}</h3>
+                {OPPORTUNITIES.filter(o=>saved.includes(o.id)).length===0?(
+                  <div style={{textAlign:"center",padding:"28px",color:"rgba(255,255,255,0.2)"}}>
+                    <SVGIcon name="heart" size={32} color="rgba(255,255,255,0.15)"/>
+                    <p style={{fontSize:12,marginTop:9}}>{isAr?"لا توجد فرص محفوظة":"No saved opportunities"}</p>
+                  </div>
+                ):(
+                  <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                    {OPPORTUNITIES.filter(o=>saved.includes(o.id)).map(o=>(
+                      <div key={o.id} onClick={()=>setSel(o)} style={{display:"flex",gap:11,padding:10,borderRadius:11,background:"rgba(255,255,255,0.03)",cursor:"pointer"}}>
+                        <img src={o.image} style={{width:48,height:48,borderRadius:9,objectFit:"cover"}} alt=""/>
+                        <div style={{flex:1,minWidth:0}}>
+                          <p style={{fontSize:12,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{isAr?o.title:o.titleEn}</p>
+                          <p style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:2}}>{isAr?o.city:o.cityEn} · <span style={{color:"#10b981"}}>{o.roi}%</span></p>
+                          <div style={{marginTop:4}}><FundBar pct={o.fundedPct} isAr={isAr}/></div>
+                        </div>
+                        <Ring v={o.score} size={40}/>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div><MarketChart isAr={isAr}/></div>
+            </div>
+          </div>
+        )}
+
+        {/* MESSAGES */}
+        {page==="messages"&&(
+          <div className="fu">
+            <div style={{marginBottom:20}}>
+              <h1 style={{fontWeight:800,fontSize:22}}>{isAr?"المراسلات":"Messages"}</h1>
+              <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:3}}>{isAr?"تواصل مع المستشارين الماليين":"Communicate with financial consultants"}</p>
+            </div>
+            <Messaging isAr={isAr}/>
+          </div>
+        )}
+      </main>
+
+      {/* MODALS */}
+      {sel&&<DetailModal o={sel} isAr={isAr} onClose={()=>setSel(null)} saved={saved.includes(sel.id)} onSave={toggleSave}/>}
+      {showCompare&&compareList.length>=2&&<ComparePanel opps={compareList} isAr={isAr} onClose={()=>setShowCompare(false)}/>}
+
+      {/* COMPARE BAR */}
+      {compareList.length>=2&&(
+        <div style={{position:"fixed",bottom:68,left:"50%",transform:"translateX(-50%)",zIndex:35,background:"rgba(6,182,212,0.92)",backdropFilter:"blur(16px)",borderRadius:99,padding:"9px 18px",display:"flex",alignItems:"center",gap:10,boxShadow:"0 8px 36px rgba(6,182,212,0.4)",whiteSpace:"nowrap"}}>
+          <span style={{fontSize:12,fontWeight:700,color:"#fff"}}>{isAr?`${compareList.length} فرص`:`${compareList.length} items`}</span>
+          <button onClick={()=>setShowCompare(true)} style={{padding:"5px 14px",borderRadius:99,background:"#fff",color:"#0891b2",fontSize:11,fontWeight:800,border:"none",cursor:"pointer"}}>
+            {isAr?"قارن":"Compare"}
+          </button>
+          <button onClick={()=>setCompareList([])} style={{background:"rgba(255,255,255,0.2)",border:"none",width:22,height:22,borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <SVGIcon name="x" size={10} color="white"/>
+          </button>
+        </div>
+      )}
+
+      {/* BOTTOM NAV */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(6,13,26,0.97)",borderTop:"1px solid rgba(6,182,212,0.1)",display:"flex",justifyContent:"space-around",padding:"8px 4px 11px",zIndex:30,backdropFilter:"blur(20px)"}}>
+        {navLinks.map(l=>(
+          <button key={l.id} onClick={()=>setPage(l.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",padding:"3px 5px",borderRadius:7,minWidth:0}}>
+            <SVGIcon name={l.icon} size={18} color={page===l.id?"#06b6d4":"rgba(255,255,255,0.25)"}/>
+            <span style={{fontSize:8,color:page===l.id?"#06b6d4":"rgba(255,255,255,0.25)",fontWeight:page===l.id?700:400,whiteSpace:"nowrap"}}>{l.l}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App/>);
+</script>
+</body>
+</html>
